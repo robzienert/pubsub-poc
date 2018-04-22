@@ -13,14 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.robzienert.pubsubpoc.producer
+package com.robzienert.pubsubpoc.worker
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.robzienert.pubsubpoc.HttpConfiguration
+import com.robzienert.pubsubpoc.worker.listener.ProducerService
+import javafx.concurrent.Worker
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.builder.SpringApplicationBuilder
 import org.springframework.boot.web.support.SpringBootServletInitializer
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Import
 import org.springframework.scheduling.annotation.EnableAsync
+import org.springframework.scheduling.annotation.EnableScheduling
+import retrofit2.Retrofit
+import retrofit2.converter.jackson.JacksonConverterFactory
 
 object MainDefaults {
   val PROPS = mapOf(
@@ -28,22 +38,35 @@ object MainDefaults {
     "netflix.account" to "\${netflix.environment}",
     "netflix.stack" to "test",
     "spring.config.location" to "\${user.home}/.spinnaker/",
-    "spring.application.name" to "producer",
+    "spring.application.name" to "worker",
     "spring.config.name" to "spinnaker,\${spring.application.name}",
-    "spring.profiles.active" to "\${netflix.environment},local"
+    "spring.profiles.active" to "\${netflix.environment},local",
+    "server.port" to 8081
   )
 }
 
 @Configuration
+@EnableScheduling
 @EnableAsync
 @EnableAutoConfiguration
-@ComponentScan(basePackages = ["com.robzienert.pubsubpoc.producer"])
-open class Main : SpringBootServletInitializer() {
+@Import(HttpConfiguration::class)
+@ComponentScan(basePackages = ["com.robzienert.pubsubpoc.worker"])
+open class WorkerMain : SpringBootServletInitializer() {
 
   override fun configure(builder: SpringApplicationBuilder): SpringApplicationBuilder
-    = builder.properties(MainDefaults.PROPS).sources(Main::class.java)
+    = builder.properties(MainDefaults.PROPS).sources(Worker::class.java)
+
+  @Bean open fun objectMapper() =
+    ObjectMapper().registerModule(KotlinModule())
+
+  @Bean open fun producerService() =
+    Retrofit.Builder()
+      .baseUrl("http://localhost:8080")
+      .addConverterFactory(JacksonConverterFactory.create())
+      .build()
+      .create(ProducerService::class.java)
 }
 
 fun main(args: Array<String>) {
-  SpringApplicationBuilder().properties(MainDefaults.PROPS).sources(Main::class.java).run(*args)
+  SpringApplicationBuilder().properties(MainDefaults.PROPS).sources(WorkerMain::class.java).run(*args)
 }

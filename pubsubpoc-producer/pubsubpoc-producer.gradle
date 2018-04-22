@@ -6,7 +6,7 @@ ext {
 }
 
 springBoot {
-  mainClass = "com.robzienert.pubsubpoc.producer.MainKt"
+  mainClass = "com.robzienert.pubsubpoc.producer.ProducerMainKt"
 }
 
 tasks.withType(org.springframework.boot.gradle.run.BootRunTask) {
@@ -15,5 +15,7 @@ tasks.withType(org.springframework.boot.gradle.run.BootRunTask) {
 
 dependencies {
   compile project(":pubsubpoc-shared")
+
+  compile 'org.hdrhistogram:HdrHistogram:2.1.4'
 }
 
