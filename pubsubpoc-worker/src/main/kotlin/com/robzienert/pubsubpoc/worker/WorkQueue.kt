@@ -36,11 +36,12 @@ data class Work(
 
 @Component
 class WorkQueue(
-  private val listener: CompletedJobListener
+  listenerProvider: CompletedJobListenerProvider
 ) {
 
   private val log = LoggerFactory.getLogger(javaClass)
 
+  private val listener = listenerProvider.provide()
   private val queue = DelayQueue<Work>()
 
   @PostConstruct

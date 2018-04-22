@@ -13,25 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.robzienert.pubsubpoc.worker.listener
+package com.robzienert.pubsubpoc.worker
 
-import com.robzienert.pubsubpoc.JobRequest
-import com.robzienert.pubsubpoc.worker.CompletedJobListener
-import retrofit2.Call
-import retrofit2.http.Body
-import retrofit2.http.POST
-import java.time.Instant
+import com.robzienert.pubsubpoc.worker.ListenerStrategy.HTTP
+import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.context.annotation.Configuration
 
-interface ProducerService {
-  @POST("/notify")
-  fun notify(@Body req: JobRequest): Call<Void>
+enum class ListenerStrategy {
+  HTTP,
+  REDIS
 }
 
-class HttpCompletedJobListener(
-  private val producerService: ProducerService
-) : CompletedJobListener {
-
-  override fun invoke(p1: JobRequest) {
-    producerService.notify(p1.copy(notifiedAt = Instant.now().toEpochMilli())).execute()
-  }
+@ConfigurationProperties("listener")
+open class ListenerProperties {
+  var strategy: ListenerStrategy = HTTP
 }
+
+@Configuration
+@EnableConfigurationProperties(ListenerProperties::class)
+open class ListenerConfiguration

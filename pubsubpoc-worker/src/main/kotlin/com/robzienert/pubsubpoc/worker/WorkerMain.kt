@@ -15,9 +15,8 @@
  */
 package com.robzienert.pubsubpoc.worker
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.robzienert.pubsubpoc.HttpConfiguration
+import com.robzienert.pubsubpoc.RedisConfiguration
 import com.robzienert.pubsubpoc.worker.listener.ProducerService
 import javafx.concurrent.Worker
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
@@ -41,7 +40,8 @@ object MainDefaults {
     "spring.application.name" to "worker",
     "spring.config.name" to "spinnaker,\${spring.application.name}",
     "spring.profiles.active" to "\${netflix.environment},local",
-    "server.port" to 8081
+    "server.port" to 8081,
+    "listener.strategy" to "REDIS"
   )
 }
 
@@ -49,15 +49,12 @@ object MainDefaults {
 @EnableScheduling
 @EnableAsync
 @EnableAutoConfiguration
-@Import(HttpConfiguration::class)
+@Import(HttpConfiguration::class, RedisConfiguration::class)
 @ComponentScan(basePackages = ["com.robzienert.pubsubpoc.worker"])
 open class WorkerMain : SpringBootServletInitializer() {
 
   override fun configure(builder: SpringApplicationBuilder): SpringApplicationBuilder
     = builder.properties(MainDefaults.PROPS).sources(Worker::class.java)
-
-  @Bean open fun objectMapper() =
-    ObjectMapper().registerModule(KotlinModule())
 
   @Bean open fun producerService() =
     Retrofit.Builder()

@@ -16,5 +16,23 @@
 package com.robzienert.pubsubpoc.worker
 
 import com.robzienert.pubsubpoc.JobRequest
+import com.robzienert.pubsubpoc.worker.ListenerStrategy.HTTP
+import com.robzienert.pubsubpoc.worker.ListenerStrategy.REDIS
+import com.robzienert.pubsubpoc.worker.listener.HttpCompletedJobListener
+import com.robzienert.pubsubpoc.worker.listener.RedisCompletedJobListener
+import org.springframework.stereotype.Component
 
 typealias CompletedJobListener = (JobRequest) -> Unit
+
+@Component
+class CompletedJobListenerProvider(
+  private val listenerProperties: ListenerProperties,
+  private val listeners: List<CompletedJobListener>
+) {
+
+  fun provide(): CompletedJobListener =
+    when (listenerProperties.strategy) {
+      HTTP -> listeners.filterIsInstance<HttpCompletedJobListener>()
+      REDIS -> listeners.filterIsInstance<RedisCompletedJobListener>()
+    }.first()
+}

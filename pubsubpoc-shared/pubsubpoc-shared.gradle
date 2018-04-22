@@ -11,4 +11,7 @@ dependencies {
   // json
   compile "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
   compile "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
+
+  // redis
+  compile 'redis.clients:jedis:2.9.0'
 }

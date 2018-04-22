@@ -12,7 +12,7 @@ various recovery systems.
 
 * [x] HTTP-only 
 * [ ] HTTP send, SQS notify
-* [ ] HTTP send, Redis queue notify
+* [x] HTTP send, Redis queue notify
 * [ ] SQS-only
 * [ ] Redis-only
 * [ ] gRPC

@@ -15,23 +15,32 @@
  */
 package com.robzienert.pubsubpoc.worker.listener
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.robzienert.pubsubpoc.JobRequest
+import com.robzienert.pubsubpoc.RedisConfiguration.Companion.NOTIFY_SET_KEY
 import com.robzienert.pubsubpoc.worker.CompletedJobListener
-import retrofit2.Call
-import retrofit2.http.Body
-import retrofit2.http.POST
+import org.springframework.stereotype.Component
+import redis.clients.jedis.JedisPool
+import redis.clients.jedis.params.sortedset.ZAddParams
 import java.time.Instant
 
-interface ProducerService {
-  @POST("/notify")
-  fun notify(@Body req: JobRequest): Call<Void>
-}
-
-class HttpCompletedJobListener(
-  private val producerService: ProducerService
+@Component
+class RedisCompletedJobListener(
+  private val jedisPool: JedisPool,
+  private val mapper: ObjectMapper
 ) : CompletedJobListener {
 
   override fun invoke(p1: JobRequest) {
-    producerService.notify(p1.copy(notifiedAt = Instant.now().toEpochMilli())).execute()
+    p1.copy(notifiedAt = Instant.now().toEpochMilli()).let { request ->
+      mapper.writeValueAsString(request).let { job ->
+        jedisPool.resource.use { jedis ->
+          jedis.zadd(
+            NOTIFY_SET_KEY,
+            mapOf(job to request.notifiedAt!!.toDouble()),
+            ZAddParams.zAddParams().nx()
+          )
+        }
+      }
+    }
   }
 }

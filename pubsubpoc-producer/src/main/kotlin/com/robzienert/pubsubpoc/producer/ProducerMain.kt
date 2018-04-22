@@ -16,6 +16,7 @@
 package com.robzienert.pubsubpoc.producer
 
 import com.robzienert.pubsubpoc.HttpConfiguration
+import com.robzienert.pubsubpoc.RedisConfiguration
 import com.robzienert.pubsubpoc.producer.strategy.http.WorkerService
 import okhttp3.OkHttpClient
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
@@ -49,7 +50,7 @@ object MainDefaults {
 @EnableAsync
 @EnableAutoConfiguration
 @ComponentScan(basePackages = ["com.robzienert.pubsubpoc.producer"])
-@Import(HttpConfiguration::class)
+@Import(HttpConfiguration::class, RedisConfiguration::class)
 @EnableConfigurationProperties(WorkGeneratorProperties::class)
 open class ProducerMain : SpringBootServletInitializer() {
 

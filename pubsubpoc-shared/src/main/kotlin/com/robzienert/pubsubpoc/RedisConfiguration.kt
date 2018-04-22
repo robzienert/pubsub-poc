@@ -13,25 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.robzienert.pubsubpoc.worker.listener
+package com.robzienert.pubsubpoc
 
-import com.robzienert.pubsubpoc.JobRequest
-import com.robzienert.pubsubpoc.worker.CompletedJobListener
-import retrofit2.Call
-import retrofit2.http.Body
-import retrofit2.http.POST
-import java.time.Instant
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import redis.clients.jedis.JedisPool
 
-interface ProducerService {
-  @POST("/notify")
-  fun notify(@Body req: JobRequest): Call<Void>
-}
+@Configuration
+open class RedisConfiguration {
 
-class HttpCompletedJobListener(
-  private val producerService: ProducerService
-) : CompletedJobListener {
-
-  override fun invoke(p1: JobRequest) {
-    producerService.notify(p1.copy(notifiedAt = Instant.now().toEpochMilli())).execute()
+  companion object {
+    val NOTIFY_SET_KEY = "pubsubpoc.notifications"
   }
+
+  @Bean open fun jedisPool() =
+    JedisPool()
 }

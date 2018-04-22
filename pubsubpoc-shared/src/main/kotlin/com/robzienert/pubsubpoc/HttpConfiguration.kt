@@ -28,7 +28,7 @@ import org.springframework.context.annotation.Primary
 open class HttpConfiguration {
 
   @Bean @Primary
-  open fun objectMapper() =
+  open fun mapper() =
     ObjectMapper()
       .registerModule(KotlinModule())
       .registerModule(JavaTimeModule())
