@@ -1,0 +1,28 @@
+buildscript {
+  repositories {
+    jcenter()
+  }
+  dependencies {
+    classpath "com.avast.gradle:gradle-docker-compose-plugin:$dockerComposeVersion"
+  }
+}
+
+apply plugin: "org.springframework.boot"
+
+ext {
+  springConfigLocation = System.getProperty("spring.config.location", "${System.getProperty("user.home")}/.spinnaker/")
+  repackage = System.getProperty("springBoot.repackage", "false")
+}
+
+springBoot {
+  mainClass = "com.robzienert.pubsubpoc.producer.MainKt"
+}
+
+tasks.withType(org.springframework.boot.gradle.run.BootRunTask) {
+  systemProperty("spring.config.location", project.springConfigLocation)
+}
+
+dependencies {
+  compile project(":pubsubpoc-shared")
+}
+
